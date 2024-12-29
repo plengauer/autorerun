@@ -41,7 +41,7 @@ runs:
               curl -L https://api.github.com/repos/"$repository"/actions/jobs/"$job_id"/logs > job.log
               if ! cat job.log | grep -q 'docker: toomanyrequests' && ! cat job.log | cut -d ' ' f 2- | grep -q '429'; then continue; fi
               echo "Retriggering run" >&2
-              echo curl -X POST https://api.github.com/repos/"$repository"/actions/jobs/"$job_id"/rerun # TODO
+              curl -X POST https://api.github.com/repos/"$repository"/actions/jobs/"$job_id"/rerun
             done
             rm job.log
             rm jobs.json
