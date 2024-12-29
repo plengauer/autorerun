@@ -1,0 +1,51 @@
+name: 'autorerun'
+description: 'automatically rerun workflows that have failed due to ratelimits'
+inputs:
+  github_token:
+    description: 'API Token for Github'
+    required: true
+runs:
+  using: "composite"
+  steps:
+    - name: "Search and rerun jobs"
+      shell: bash
+      env:
+        GITHUB_TOKEN: ${{ inputs.github_token }}
+      run: |
+        repository="${{ github.repository }}"
+        
+        curl() {
+          command curl --no-progress-meter -H "Authorization: Bearer $GITHUB_TOKEN" "$@"
+        }
+        
+        curl_paginated() {
+          curl --head "$@" | grep '^link: ' | cut -d ' '  -f 2- | tr -d ' <>' | tr ',' '\n' \
+          | grep 'rel="last"' | cut -d ';' -f1 | cut -d '?' -f 2- | tr '&' '\n' \
+          | grep '^page=' | cut -d = -f 2 \
+          | xargs seq 1 | while read -r page; do curl "$@"'&page='"$page"; done
+        }
+        
+        curl_paginated https://api.github.com/repos/"$repository"/pulls'?state=open&per_page=100' | jq -r .[].head.ref | sort -u | while read -r branch; do
+          echo "Checking branch $branch ..." >&2
+          curl_paginated https://api.github.com/repos/"$repository"/actions/runs'?'branch="$branch"'&per_page=100' | jq .workflow_runs[] > workflows.json
+          cat workflows.json | jq -r .name | sort -u | while read -r workflow_name; do
+            echo "Checking workflow $workflow_name" >&2
+            cat workflows.json | jq 'select(.name == "'"$workflow_name"'")' | jq -s '.[0]' > workflow.json
+            if [ "$(cat workflow.json | jq -s -r '.[0].conclusion')" != failure ]; then continue; fi
+            run_id=$(cat workflow.json | jq -r .id)
+            run_attempt=$(cat workflow.json | jq -r .run_attempt)
+            echo "Last run failed (id=$run_id, attempt=$run_attempt)" >&2
+            curl_paginated https://api.github.com/repos/"$repository"/actions/runs/"$run_id"/attempts/"$run_attempt"/jobs'?per_page=100' | jq .jobs[] > jobs.json
+            cat jobs.json | jq 'select(.conclusion == "failure") | .id' | while read -r job_id; do
+              echo "Job $job_id failed" >&2
+              curl -L https://api.github.com/repos/"$repository"/actions/jobs/"$job_id"/logs > job.log
+              if ! cat job.log | grep -q 'docker: toomanyrequests' && ! cat job.log | cut -d ' ' f 2- | grep -q '429'; then continue; fi
+              echo "Retriggering run" >&2
+              echo curl -X POST https://api.github.com/repos/"$repository"/actions/jobs/"$job_id"/rerun # TODO
+            done
+            rm job.log
+            rm jobs.json
+            rm workflow.json
+          done
+          rm workflows.json
+        done
