@@ -39,7 +39,7 @@ runs:
             cat jobs.json | jq 'select(.conclusion == "failure") | .id' | while read -r job_id; do
               echo "Job $job_id failed" >&2
               curl -L https://api.github.com/repos/"$repository"/actions/jobs/"$job_id"/logs > job.log
-              if ! cat job.log | grep -q 'docker: toomanyrequests' && ! cat job.log | cut -d ' ' f 2- | grep -q '429'; then continue; fi
+              if ! cat job.log | grep -q 'docker: toomanyrequests' && ! cat job.log | cut -d ' ' f 2- | tr '[:upper:]' '[:lower:]' | grep -q '429 too many requests' && ! cat job.log | tr '[:upper:]' '[:lower:]' | grep -q 'rate limit exceeded' && ! cat job.log | tr '[:upper:]' '[:lower:]' | grep -q 'rate limit hit'; then continue; fi
               echo "Retriggering run" >&2
               curl -X POST https://api.github.com/repos/"$repository"/actions/jobs/"$job_id"/rerun
             done
