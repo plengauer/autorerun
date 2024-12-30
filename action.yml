@@ -35,16 +35,15 @@ runs:
             run_id=$(cat workflow.json | jq -r .id)
             run_attempt=$(cat workflow.json | jq -r .run_attempt)
             echo "Last run failed (id=$run_id, attempt=$run_attempt)" >&2
-            curl_paginated https://api.github.com/repos/"$repository"/actions/runs/"$run_id"/attempts/"$run_attempt"/jobs'?per_page=100' | jq .jobs[] > jobs.json
-            cat jobs.json | jq 'select(.conclusion == "failure") | .id' | while read -r job_id; do
+            curl_paginated https://api.github.com/repos/"$repository"/actions/runs/"$run_id"/attempts/"$run_attempt"/jobs'?per_page=100' | jq '.jobs[] | select(.conclusion == "failure") | .id' | while read -r job_id; do
               echo "Job $job_id failed" >&2
-              curl -L https://api.github.com/repos/"$repository"/actions/jobs/"$job_id"/logs > job.log
-              if ! cat job.log | grep -q 'docker: toomanyrequests' && ! cat job.log | cut -d ' ' f 2- | tr '[:upper:]' '[:lower:]' | grep -q '429 too many requests' && ! cat job.log | tr '[:upper:]' '[:lower:]' | grep -q 'rate limit exceeded' && ! cat job.log | tr '[:upper:]' '[:lower:]' | grep -q 'rate limit hit'; then continue; fi
-              echo "Retriggering run" >&2
-              curl -X POST https://api.github.com/repos/"$repository"/actions/jobs/"$job_id"/rerun
+              curl -L https://api.github.com/repos/"$repository"/actions/jobs/"$job_id"/logs | cut -d ' ' -f 2- | tr '[:upper:]' '[:lower:]' | grep -F 'connection timeout
+        500 internal server error
+        429 too many requests
+        rate limit exceeded
+        rate limit hit
+        docker: toomanyrequests' && echo "Retriggering run" && curl -X POST https://api.github.com/repos/"$repository"/actions/jobs/"$job_id"/rerun || true
             done
-            rm job.log
-            rm jobs.json
             rm workflow.json
           done
           rm workflows.json
