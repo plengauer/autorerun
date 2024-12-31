@@ -17,34 +17,32 @@ runs:
         curl() {
           command curl --no-progress-meter -H "Authorization: Bearer $GITHUB_TOKEN" "$@"
         }
+        export -f curl
         
         curl_paginated() {
-          curl --head "$@" | grep '^link: ' | cut -d ' '  -f 2- | tr -d ' <>' | tr ',' '\n' \
-          | grep 'rel="last"' | cut -d ';' -f1 | cut -d '?' -f 2- | tr '&' '\n' \
-          | grep '^page=' | cut -d = -f 2 \
-          | xargs seq 1 | while read -r page; do curl "$@"'&page='"$page"; done
+          { 
+            curl --head "$@" | grep '^link: ' | cut -d ' '  -f 2- | tr -d ' <>' | tr ',' '\n' \
+              | grep 'rel="last"' | cut -d ';' -f1 | cut -d '?' -f 2- | tr '&' '\n' \
+              | grep '^page=' | cut -d = -f 2 \
+              | xargs seq 1 || true
+          } | while read -r page; do echo "$@"'&page='"$page"; done | xargs bash -ec 'curl "$@"' bash
         }
         
         curl_paginated https://api.github.com/repos/"$repository"/pulls'?state=open&per_page=100' | jq -r .[].head.ref | sort -u | while read -r branch; do
-          echo "Checking branch $branch ..." >&2
-          curl_paginated https://api.github.com/repos/"$repository"/actions/runs'?'branch="$branch"'&per_page=100' | jq .workflow_runs[] > workflows.json
-          cat workflows.json | jq -r .name | sort -u | while read -r workflow_name; do
-            echo "Checking workflow $workflow_name" >&2
-            cat workflows.json | jq 'select(.name == "'"$workflow_name"'")' | jq -s '.[0]' > workflow.json
-            if [ "$(cat workflow.json | jq -s -r '.[0].conclusion')" != failure ]; then continue; fi
-            run_id=$(cat workflow.json | jq -r .id)
-            run_attempt=$(cat workflow.json | jq -r .run_attempt)
-            echo "Last run failed (id=$run_id, attempt=$run_attempt)" >&2
-            curl_paginated https://api.github.com/repos/"$repository"/actions/runs/"$run_id"/attempts/"$run_attempt"/jobs'?per_page=100' | jq '.jobs[] | select(.conclusion == "failure") | .id' | while read -r job_id; do
-              echo "Job $job_id failed" >&2
-              curl -L https://api.github.com/repos/"$repository"/actions/jobs/"$job_id"/logs | cut -d ' ' -f 2- | tr '[:upper:]' '[:lower:]' | grep -F 'connection timeout
+          curl_paginated https://api.github.com/repos/"$repository"/actions/workflows'?per_page=100' | jq -r .workflows[].name | sort -u | while read -r workflow_name; do
+            curl_paginated https://api.github.com/repos/"$repository"/actions/runs'?'branch="$branch"'&per_page=100' | jq '.workflow_runs[] | select(.name == "'"$workflow_name"'")' | jq -s -r '.[0] | [ .id, .run_attempt, .conclusion ] | @tsv'
+          done
+        done | while read -r run_id run_attempt conclusion; do
+          if [ "$conclusion" = failure ]; then echo "$run_id" "$run_attempt"; fi
+        done | while read -r run_id run_attempt; do
+          curl_paginated https://api.github.com/repos/"$repository"/actions/runs/"$run_id"/attempts/"$run_attempt"/jobs'?per_page=100' | jq '.jobs[] | select(.conclusion == "failure") | .id'
+        done | while read -r job_id; do
+          curl -L https://api.github.com/repos/"$repository"/actions/jobs/"$job_id"/logs | cut -d ' ' -f 2- | tr '[:upper:]' '[:lower:]' | grep -F 'connection timeout
         500 internal server error
         429 too many requests
         rate limit exceeded
         rate limit hit
-        docker: toomanyrequests' && echo "Retriggering run" && curl -X POST https://api.github.com/repos/"$repository"/actions/jobs/"$job_id"/rerun || true
-            done
-            rm workflow.json
-          done
-          rm workflows.json
+        docker: toomanyrequests' >&2 && echo "$job_id" || true
+        done | while read -r job_id; do
+          curl -X POST https://api.github.com/repos/"$repository"/actions/jobs/"$job_id"/rerun
         done
