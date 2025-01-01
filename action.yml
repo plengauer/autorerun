@@ -28,11 +28,15 @@ runs:
           } | while read -r page; do echo "$@"'&page='"$page"; done | xargs bash -ec 'curl "$@"' bash
         }
         
-        curl_paginated https://api.github.com/repos/"$repository"/pulls'?state=open&per_page=100' | jq -r .[].head.ref | sort -u | while read -r branch; do
-          curl_paginated https://api.github.com/repos/"$repository"/actions/workflows'?per_page=100' | jq -r .workflows[].name | sort -u | while read -r workflow_name; do
-            curl_paginated https://api.github.com/repos/"$repository"/actions/runs'?'branch="$branch"'&per_page=100' | jq '.workflow_runs[] | select(.name == "'"$workflow_name"'")' | jq -s -r '.[0] | [ .id, .run_attempt, .conclusion ] | @tsv'
+        if [ "${{ github.event_name }}" = 'workflow_run' ]; then
+          echo "${{ github.event.workflow_run }}"
+        else
+          curl_paginated https://api.github.com/repos/"$repository"/pulls'?state=open&per_page=100' | jq -r .[].head.ref | sort -u | while read -r branch; do
+            curl_paginated https://api.github.com/repos/"$repository"/actions/workflows'?per_page=100' | jq -r .workflows[].name | sort -u | while read -r workflow_name; do
+              curl_paginated https://api.github.com/repos/"$repository"/actions/runs'?'branch="$branch"'&per_page=100' | jq '.workflow_runs[] | select(.name == "'"$workflow_name"'")'
+            done
           done
-        done | while read -r run_id run_attempt conclusion; do
+        fi | jq -s -r '.[0] | [ .id, .run_attempt, .conclusion ] | @tsv' | while read -r run_id run_attempt conclusion; do
           if [ "$conclusion" = failure ]; then echo "$run_id" "$run_attempt"; fi
         done | while read -r run_id run_attempt; do
           curl_paginated https://api.github.com/repos/"$repository"/actions/runs/"$run_id"/attempts/"$run_attempt"/jobs'?per_page=100' | jq '.jobs[] | select(.conclusion == "failure") | .id'
