@@ -1,0 +1,11 @@
+name: EXPERIMENT
+
+on:
+  workflow_dispatch:
+
+jobs:
+  rerun:
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          [ $(($RANDOM % 100)) -ge 50 ] || ( echo 429 Too Many Requests && exit 1 )
