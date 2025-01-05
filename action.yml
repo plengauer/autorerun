@@ -29,16 +29,17 @@ runs:
         }
 
         should_rerun() {
-          grep -F 'connection timeout
+          sed -e ':a' -e '/\\wsl.exe --update$/ { N; s/\n//; ba }' | grep -E 'connection timeout
         500 internal server error
-        internal server error (500)
+        internal server error \(500\)
         500 internal error
-        internal error (500)
+        internal error \(500\)
         429 too many requests
-        too many requests (429)
+        too many requests \(429\)
         rate limit exceeded
         rate limit hit
-        toomanyrequests' >&2
+        toomanyrequests
+        \\wsl\.exe --update.*Forbidden \(403\)' >&2
         }
         
         if [ "${{ github.event_name }}" = 'workflow_run' ]; then
@@ -54,7 +55,7 @@ runs:
         done | while read -r run_id run_attempt; do
           curl_paginated https://api.github.com/repos/"$repository"/actions/runs/"$run_id"/attempts/"$run_attempt"/jobs'?per_page=100' | jq '.jobs[] | select(.conclusion == "failure") | .id'
         done | while read -r job_id; do
-          curl -L https://api.github.com/repos/"$repository"/actions/jobs/"$job_id"/logs | cut -d ' ' -f 2- | tr '[:upper:]' '[:lower:]' | should_rerun && echo "$job_id" || true
+          curl -L https://api.github.com/repos/"$repository"/actions/jobs/"$job_id"/logs | cut -d ' ' -f 2- | tr '[:upper:]' '[:lower:]' | tr -d '\r' | tr -d '\000' | should_rerun && echo "$job_id" || true
         done | while read -r job_id; do
           curl -X POST https://api.github.com/repos/"$repository"/actions/jobs/"$job_id"/rerun
         done
