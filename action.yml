@@ -43,7 +43,7 @@ runs:
         \\wsl\.exe --update.*forbidden \(403\)' >&2
         }
 
-        if false && [ "${{ github.event_name }}" = 'workflow_run' ]; then
+        if [ "${{ github.event_name }}" = 'workflow_run' ]; then
           echo '${{ toJson(github.event.workflow_run) }}'
         else
           curl_paginated https://api.github.com/repos/"$repository"/pulls'?state=open&per_page=100' | jq -r .[].head.ref | while read -r branch; do
