@@ -12,7 +12,7 @@ runs:
       env:
         GITHUB_TOKEN: ${{ inputs.github_token }}
       run: |
-        repository="${{ github.repository }}"
+        repository="$GITHUB_REPOSITORY"
         
         curl() {
           command curl --no-progress-meter -H "Authorization: Bearer $GITHUB_TOKEN" "$@"
@@ -44,8 +44,8 @@ runs:
         \\wsl\.exe --update.*forbidden \(403\)' > /dev/null
         }
 
-        if [ "${{ github.event_name }}" = 'workflow_run' ]; then
-          echo '${{ toJson(github.event.workflow_run) }}'
+        if [ "$GITHUB_EVENT_NAME" = 'workflow_run' ]; then
+          cat "$GITHUB_EVENT_PATH"
         else
           curl_paginated https://api.github.com/repos/"$repository"/pulls'?state=open&per_page=100' | jq -r .[].head.ref | while read -r branch; do
             curl_paginated https://api.github.com/repos/"$repository"/actions/workflows'?per_page=100' | jq -r .workflows[].id | while read -r workflow_id; do echo "$branch" "$workflow_id"; done
