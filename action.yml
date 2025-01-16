@@ -31,6 +31,7 @@ runs:
         should_rerun() {
           sed -e ':a' -e '/\\wsl.exe --update$/ { N; s/\n//; ba }' | grep -E 'connection timeout
         connection reset by peer
+        econnreset
         500 internal server error
         internal server error \(500\)
         500 internal error
