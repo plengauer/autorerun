@@ -43,6 +43,7 @@ runs:
         toomanyrequests
         error 403: server failed to authenticate the request\. make sure the value of Authorization header is formed correctly including the signature\.
         \\wsl\.exe --update.*forbidden \(403\)' > /dev/null
+        solution .*: downgrade of .* to .*
         }
 
         if [ "$GITHUB_EVENT_NAME" = 'workflow_run' ]; then
