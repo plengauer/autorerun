@@ -5,13 +5,13 @@ on:
     - cron: '0 0 * * *'
   workflow_dispatch:
   workflow_run:
-    workflows: [ 'EXPERIMENT' ]
+    workflows: [ 'Release' ]
     types: completed
 
 jobs:
   rerun:
     runs-on: ubuntu-latest
     steps:
-      - uses: plengauer/autorerun@v0.12.0
+      - uses: plengauer/autorerun@main
         with:
-          github_token: ${{ secrets.ACTIONS_GITHUB_TOKEN }} # token for GITHUB to retrigger, needs permissions to run GitHub Actions
+          github_token: ${{ secrets.ACTIONS_GITHUB_TOKEN }} 
