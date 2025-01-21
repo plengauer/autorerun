@@ -23,7 +23,7 @@ runs:
               | grep 'rel="last"' | cut -d ';' -f1 | cut -d '?' -f 2- | tr '&' '\n' \
               | grep '^page=' | cut -d = -f 2 \
               | xargs seq 1 || true
-          } | while read -r page; do echo "$@"'&page='"$page"; done | xargs parallel bash -ec 'gh_curl "$@"' bash :::
+          } | while read -r page; do echo "$@"'&page='"$page"; done | xargs parallel gh_curl :::
         }
 
         should_rerun() {
