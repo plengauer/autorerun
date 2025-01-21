@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - run: |
-          [ "$GITHUB_RUN_ATTEMPT" = 1 ] && echo 429 Too Many Requests (simulated) || true
+          [ "$GITHUB_RUN_ATTEMPT" = 1 ] && echo 429 Too Many Requests '(simulated)' || true
 
   release:
     needs: test
