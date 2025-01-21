@@ -6,8 +6,14 @@ on:
       - 'VERSION'
 
 jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          [ "$GITHUB_RUN_ATTEMPT" = 1 ] && echo 429 Too Many Requests (simulated) || true
 
   release:
+    needs: test
     runs-on: ubuntu-latest
     permissions:
       contents: write
