@@ -57,5 +57,6 @@ runs:
         done | jq '.jobs[] | select(.conclusion == "failure") | .id' | while read -r job_id; do
           gh_curl /actions/jobs/"$job_id"/logs -L | cut -d ' ' -f 2- | tr '[:upper:]' '[:lower:]' | tr -d '\r' | tr -d '\000' | should_rerun && echo "$job_id" || true
         done | while read -r job_id; do
+          echo "::notice ::Autorerunning ${GITHUB_API_URL:-https://api.github.com}/actions/jobs/$job_id"
           gh_curl /actions/jobs/"$job_id"/rerun -X POST
         done
