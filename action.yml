@@ -42,7 +42,8 @@ runs:
         error 403: server failed to authenticate the request\. make sure the value of Authorization header is formed correctly including the signature\.
         \\wsl\.exe --update.*forbidden \(403\)
         solution .*: downgrade of .* to .*
-        docker: error response from daemon: failed to create task for container: failed to create shim task: oci runtime create failed: runc create failed: unable to start container process: unable to apply cgroup configuration:' > /dev/null
+        docker: error response from daemon: failed to create task for container: failed to create shim task: oci runtime create failed: runc create failed: unable to start container process: unable to apply cgroup configuration:
+        cannot connect to the docker daemon at unix:///var/run/docker\.sock. is the docker daemon running' > /dev/null
         }
 
         if [ "$GITHUB_EVENT_NAME" = 'workflow_run' ] && [ -r "$GITHUB_EVENT_PATH" ]; then
