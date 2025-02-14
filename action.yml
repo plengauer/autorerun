@@ -47,16 +47,16 @@ runs:
         }
 
         if [ "$GITHUB_EVENT_NAME" = 'workflow_run' ] && [ -r "$GITHUB_EVENT_PATH" ]; then
-          cat "$GITHUB_EVENT_PATH" | jq .workflow_run
+          cat "$GITHUB_EVENT_PATH" | jq --unbuffered .workflow_run
         else
-          gh_curl_paginated /pulls'?state=open&per_page=100' | jq -r .[].head.ref | while read -r branch; do
-            gh_curl_paginated /actions/workflows'?per_page=100' | jq -r .workflows[].id | while read -r workflow_id; do echo "$branch" "$workflow_id"; done
+          gh_curl_paginated /pulls'?state=open&per_page=100' | jq --unbuffered -r .[].head.ref | while read -r branch; do
+            gh_curl_paginated /actions/workflows'?per_page=100' | jq --unbuffered -r .workflows[].id | while read -r workflow_id; do echo "$branch" "$workflow_id"; done
           done | while read -r branch workflow_id; do
-            gh_curl /actions/workflows/"$workflow_id"/runs'?'branch="$branch"'&per_page=1' | jq '.workflow_runs[0]' | { grep -v '^null$' || true; }
+            gh_curl /actions/workflows/"$workflow_id"/runs'?'branch="$branch"'&per_page=1' | jq --unbuffered '.workflow_runs[0]' | { grep -v '^null$' || true; }
           done
-        fi | jq -r '. | select(.conclusion == "failure") | select(.run_attempt < 100) | [ .id, .run_attempt ] | @tsv' | sed 's/\t/ /g' | while read -r run_id run_attempt; do
+        fi | jq --unbuffered -r '. | select(.conclusion == "failure") | select(.run_attempt < 100) | [ .id, .run_attempt ] | @tsv' | sed 's/\t/ /g' | while read -r run_id run_attempt; do
           gh_curl_paginated /actions/runs/"$run_id"/attempts/"$run_attempt"/jobs'?per_page=100'
-        done | jq '.jobs[] | select(.conclusion == "failure") | .id' | while read -r job_id; do
+        done | jq --unbuffered '.jobs[] | select(.conclusion == "failure") | .id' | while read -r job_id; do
           gh_curl /actions/jobs/"$job_id"/logs -L | cut -d ' ' -f 2- | tr '[:upper:]' '[:lower:]' | tr -d '\r' | tr -d '\000' | should_rerun && echo "$job_id" || true
         done | while read -r job_id; do
           echo "::notice ::Autorerunning ${GITHUB_API_URL:-https://api.github.com}/actions/jobs/$job_id"
