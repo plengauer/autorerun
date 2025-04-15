@@ -28,6 +28,7 @@ runs:
 
         should_rerun() {
           sed -e ':a' -e '/\\wsl.exe --update$/ { N; s/\n//; ba }' | grep -E 'connection timeout
+        timeout expired
         connection reset by peer
         econnreset
         500 internal server error
