@@ -42,6 +42,8 @@ runs:
         toomanyrequests
         error 403: server failed to authenticate the request\. make sure the value of authorization header is formed correctly including the signature\.
         \\wsl\.exe --update.*forbidden \(403\)
+        unable to fetch some archives
+        e: failed to fetch http:.*\.deb  403  forbidden
         solution .*: downgrade of .* to .*
         is temporarily unaccessible
         docker: error response from daemon: failed to create task for container: failed to create shim task: oci runtime create failed: runc create failed: unable to start container process: unable to apply cgroup configuration:
