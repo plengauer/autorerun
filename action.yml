@@ -67,10 +67,10 @@ runs:
           [ "${last_run_id:-}" != "$run_id" ] && gh_curl /actions/jobs/"$job_id"/logs -L | cut -d ' ' -f 2- | tr '[:upper:]' '[:lower:]' | tr -d '\r' | tr -d '\000' | should_rerun && echo "$run_id" "$job_id" && last_run_id="$run_id" || true
         done | while read -r run_id job_id; do
           if [ -n "$job_id" ]; then
-            echo "::notice ::Autorerunning ${GITHUB_API_URL:-https://api.github.com}/actions/jobs/$job_id"
+            echo "::notice ::Autorerunning ${GITHUB_API_URL:-https://api.github.com}/repos/"$GITHUB_REPOSITORY"/actions/jobs/$job_id"
             gh_curl /actions/jobs/"$job_id"/rerun -X POST
           else
-            echo "::notice ::Autorerunning ${GITHUB_API_URL:-https://api.github.com}/actions/runs/$run_id"
+            echo "::notice ::Autorerunning ${GITHUB_API_URL:-https://api.github.com}/repos/"$GITHUB_REPOSITORY"/actions/runs/$run_id"
             gh_curl /actions/runs/"$run_id"/rerun-failed-jobs -X POST
           fi
         done
