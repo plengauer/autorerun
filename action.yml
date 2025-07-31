@@ -45,6 +45,7 @@ runs:
         unable to fetch some archives
         e: failed to fetch http:.*\.deb  403  forbidden
         e: some index files failed to download
+        e: unable to acquire the dpkg frontend lock
         solution .*: downgrade of .* to .*
         is temporarily unaccessible
         docker: error response from daemon: failed to create task for container: failed to create shim task: oci runtime create failed: runc create failed: unable to start container process: unable to apply cgroup configuration:
