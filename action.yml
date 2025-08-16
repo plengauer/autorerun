@@ -27,7 +27,8 @@ runs:
         }
 
         should_rerun() {
-          sed -e ':a' -e '/\\wsl.exe --update$/ { N; s/\n//; ba }' | grep -E 'connection timeout
+          sed -e ':a' -e '/\\wsl.exe --update$/ { N; s/\n//; ba }' | grep -E 'network is unreachable
+        connection timeout
         timeout expired
         connection reset by peer
         econnreset
