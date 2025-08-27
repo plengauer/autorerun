@@ -13,7 +13,7 @@ runs:
         GITHUB_TOKEN: ${{ inputs.github_token }}
       run: |
         gh_curl() {
-          curl --no-progress-meter -H "Authorization: Bearer $GITHUB_TOKEN" "${GITHUB_API_URL:-https://api.github.com}"/repos/"$GITHUB_REPOSITORY""$@"
+          curl --no-progress-meter --fail --retry 16 -H "Authorization: Bearer $GITHUB_TOKEN" "${GITHUB_API_URL:-https://api.github.com}"/repos/"$GITHUB_REPOSITORY""$@"
         }
         export -f gh_curl
 
