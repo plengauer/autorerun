@@ -65,7 +65,7 @@ runs:
           done
         fi | jq --unbuffered -r '. | select(.conclusion == "failure") | select(.run_attempt < 100) | [ .id, .run_attempt ] | @tsv' | sed 's/\t/ /g' | while read -r run_id run_attempt; do
           gh_curl_paginated /actions/runs/"$run_id"/attempts/"$run_attempt"/jobs'?per_page=100'
-        done | jq --unbuffered -r '.jobs[] | select(.conclusion == "failure") | [ .run_id, .id ] | @tsv' | sed 's/\t/ /g' | while read -r run_id job_id; do
+        done | jq --unbuffered -r '.jobs[] | select(.conclusion == "failure" or .conclusion == "timeout" or .conclusion == "cancelled") | [ .run_id, .id ] | @tsv' | sed 's/\t/ /g' | while read -r run_id job_id; do
           [ "${last_run_id:-}" != "$run_id" ] && gh_curl /actions/jobs/"$job_id"/logs -L | cut -d ' ' -f 2- | tr '[:upper:]' '[:lower:]' | tr -d '\r' | tr -d '\000' | should_rerun && echo "$run_id" "$job_id" && last_run_id="$run_id" || true
         done | while read -r run_id job_id; do
           if [ -n "$job_id" ]; then
