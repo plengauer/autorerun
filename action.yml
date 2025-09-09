@@ -36,6 +36,8 @@ runs:
         internal server error \(500\)
         500 internal error
         internal error \(500\)
+        502 bad gateway
+        503 service temporarily unavailable
         429 too many requests
         too many requests \(429\)
         rate limit exceeded
