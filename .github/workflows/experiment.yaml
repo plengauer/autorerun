@@ -7,5 +7,13 @@ jobs:
   rerun:
     runs-on: ubuntu-latest
     steps:
+      - uses: plengauer/opentelemetry-github/actions/instrument/job@v5.27.0
+        env:
+          OTEL_EXPORTER_OTLP_ENDPOINT: ${{ secrets.OTEL_EXPORTER_OTLP_ENDPOINT }}
+          OTEL_EXPORTER_OTLP_HEADERS: ${{ secrets.OTEL_EXPORTER_OTLP_HEADERS }}
+        with:
+          secrets_to_redact: '["${{ github.token }}"]'
       - run: |
           [ $(($RANDOM % 100)) -ge 50 ] || ( echo 429 Too Many Requests && exit 1 )
+    permissions:
+      actions: read

@@ -9,24 +9,26 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - uses: plengauer/opentelemetry-bash/actions/instrument/job@v5.25.2
+      - uses: plengauer/opentelemetry-github/actions/instrument/job@v5.25.2
         with:
-          secrets_to_redact: '${{ toJSON(secrets) }}'
+          secrets_to_redact: '["${{ github.token }}"]'
         env:
           OTEL_EXPORTER_OTLP_ENDPOINT: '${{ secrets.OTEL_EXPORTER_OTLP_ENDPOINT }}'
           OTEL_EXPORTER_OTLP_HEADERS: '${{ secrets.OTEL_EXPORTER_OTLP_HEADERS }}'
       - run: |
           [ "$GITHUB_RUN_ATTEMPT" != 1 ] || (echo 429 Too Many Requests '(simulated)' && false)
-
+    permissions:
+      actions: read
   release:
     needs: test
     runs-on: ubuntu-latest
     permissions:
       contents: write
+      actions: read
     steps:
-      - uses: plengauer/opentelemetry-bash/actions/instrument/job@v5.25.2
+      - uses: plengauer/opentelemetry-github/actions/instrument/job@v5.25.2
         with:
-          secrets_to_redact: '${{ toJSON(secrets) }}'
+          secrets_to_redact: '["${{ github.token }}","${{ secrets.GITHUB_TOKEN }}"]'
         env:
           OTEL_EXPORTER_OTLP_ENDPOINT: '${{ secrets.OTEL_EXPORTER_OTLP_ENDPOINT }}'
           OTEL_EXPORTER_OTLP_HEADERS: '${{ secrets.OTEL_EXPORTER_OTLP_HEADERS }}'
