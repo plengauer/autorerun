@@ -55,6 +55,7 @@ runs:
         docker: error response from daemon: failed to create task for container: failed to create shim task: oci runtime create failed: runc create failed: unable to start container process: unable to apply cgroup configuration:
         cannot connect to the docker daemon at unix:///var/run/docker\.sock. is the docker daemon running
         qemu: uncaught target signal 11 \(segmentation fault\) - core dumped
+        strace:*broken pipe
         <p><b>404\.</b> <ins>that’s an error\.</ins>' > /dev/null
         }
 
