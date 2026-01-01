@@ -4,6 +4,9 @@ inputs:
   github_token:
     description: 'API Token for Github'
     required: true
+  custom_patterns:
+    descriptions: 'Additional patterns'
+    default: ''
 runs:
   using: "composite"
   steps:
@@ -11,6 +14,7 @@ runs:
       shell: bash
       env:
         GITHUB_TOKEN: ${{ inputs.github_token }}
+        CUSTOM_PATTERNS: ${{ inputs.custom_patterns }}
       run: |
         gh_curl() {
           curl --no-progress-meter --fail --retry 16 -H "Authorization: Bearer $GITHUB_TOKEN" "${GITHUB_API_URL:-https://api.github.com}"/repos/"$GITHUB_REPOSITORY""$@"
@@ -27,7 +31,7 @@ runs:
         }
 
         should_rerun() {
-          sed -e ':a' -e '/\\wsl.exe --update$/ { N; s/\n//; ba }' | grep -E 'network is unreachable
+          sed -e ':a' -e '/\\wsl.exe --update$/ { N; s/\n//; ba }' | grep -E "$(printf '%s' 'network is unreachable
         connection timeout
         timeout expired
         TimeoutError
@@ -57,7 +61,8 @@ runs:
         cannot connect to the docker daemon at unix:///var/run/docker\.sock. is the docker daemon running
         qemu: uncaught target signal 11 \(segmentation fault\) - core dumped
         strace:*broken pipe
-        <p><b>404\.</b> <ins>that’s an error\.</ins>' > /dev/null
+        <p><b>404\.</b> <ins>that’s an error\.</ins>
+        '"$CUSTOM_PATTERNS" | grep -vE '^$')" > /dev/null
         }
 
         if [ "$GITHUB_EVENT_NAME" = 'workflow_run' ] && [ -r "$GITHUB_EVENT_PATH" ]; then
