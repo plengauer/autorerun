@@ -68,7 +68,7 @@ runs:
         if [ "$GITHUB_EVENT_NAME" = 'workflow_run' ] && [ -r "$GITHUB_EVENT_PATH" ]; then
           cat "$GITHUB_EVENT_PATH" | jq --unbuffered .workflow_run
         else
-          gh_curl_paginated /pulls'?state=open&per_page=100' | jq --unbuffered -r .[].head.ref | while read -r branch; do
+          gh_curl_paginated /branches'?per_page=100' | jq --unbuffered -r .[].name | while read -r branch; do
             gh_curl_paginated /actions/workflows'?per_page=100' | jq --unbuffered -r .workflows[].id | while read -r workflow_id; do echo "$branch" "$workflow_id"; done
           done | while read -r branch workflow_id; do
             gh_curl /actions/workflows/"$workflow_id"/runs'?'branch="$branch"'&per_page=1' | jq --unbuffered '.workflow_runs[0]' | { grep -v '^null$' || true; }
