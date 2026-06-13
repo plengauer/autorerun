@@ -9,7 +9,10 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     concurrency:
-      group: otel-deploy-job-${{ github.ref_name }}
+      group: deploy-otel-job-${{ github.ref_name }}
+    permissions:
+      contents: write
+      pull-requests: write
     steps:
       - uses: plengauer/opentelemetry-github/actions/instrument/job@v5.49.0
         env:
@@ -23,5 +26,3 @@ jobs:
           OTEL_EXPORTER_OTLP_HEADERS: '${{ secrets.OTEL_EXPORTER_OTLP_HEADERS }}'
         with:
           github_token: '${{ secrets.ACTIONS_GITHUB_TOKEN }}'
-    permissions:
-      actions: read
