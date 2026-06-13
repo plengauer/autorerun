@@ -15,8 +15,8 @@ jobs:
   recompile:
     runs-on: ubuntu-latest
     permissions:
-      contents: read
-      actions: read
+      contents: write
+      pull-requests: write
     steps:
       - uses: actions/checkout@v6.0.2
       - env:
