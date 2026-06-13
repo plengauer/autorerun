@@ -11,6 +11,11 @@ concurrency:
 jobs:
   renovate:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
+      security-events: write
     steps:
       - uses: plengauer/opentelemetry-github/actions/instrument/job@v5.49.0
         with:
@@ -25,5 +30,3 @@ jobs:
           RENOVATE_ONBOARDING_CONFIG: '{"$schema": "https://docs.renovatebot.com/renovate-schema.json", "extends": ["github>plengauer/bootstrap"]}'
         with:
           token: ${{ secrets.ACTIONS_GITHUB_TOKEN }}
-    permissions:
-      actions: read
