@@ -16,6 +16,7 @@ jobs:
       pull-requests: write
       issues: write
       security-events: write
+      actions: read
     steps:
       - uses: plengauer/opentelemetry-github/actions/instrument/job@v5.49.0
         with:
