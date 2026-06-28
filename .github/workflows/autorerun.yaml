@@ -12,7 +12,7 @@ jobs:
   rerun:
     runs-on: ubuntu-latest
     steps:
-      - uses: plengauer/opentelemetry-github/actions/instrument/job@v5.49.0
+      - uses: plengauer/opentelemetry-github/actions/instrument/job@fb367b62aa357d505408babf57a5c29d5f000412 # v5.49.0
         with:
           secrets_to_redact: '["${{ github.token }}","${{ secrets.ACTIONS_GITHUB_TOKEN }}"]'
         env:
@@ -21,7 +21,7 @@ jobs:
       - run: echo "$GITHUB_EVENT_NAME"
       - run: echo "$GITHUB_EVENT_PATH"
       - run: cat "$GITHUB_EVENT_PATH"
-      - uses: plengauer/autorerun@main
+      - uses: plengauer/autorerun@07fce0900a7d3a4abcefd890bfc7ee948cc2ec3a # main
         with:
           github_token: ${{ secrets.ACTIONS_GITHUB_TOKEN }} 
     permissions:

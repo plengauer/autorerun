@@ -17,13 +17,13 @@ jobs:
       issues: write
       security-events: write
     steps:
-      - uses: plengauer/opentelemetry-github/actions/instrument/job@v5.49.0
+      - uses: plengauer/opentelemetry-github/actions/instrument/job@fb367b62aa357d505408babf57a5c29d5f000412 # v5.49.0
         with:
           secrets_to_redact: '["${{ github.token }}","${{ secrets.ACTIONS_GITHUB_TOKEN }}"]'
         env:
           OTEL_EXPORTER_OTLP_ENDPOINT: '${{ secrets.OTEL_EXPORTER_OTLP_ENDPOINT }}'
           OTEL_EXPORTER_OTLP_HEADERS: '${{ secrets.OTEL_EXPORTER_OTLP_HEADERS }}'
-      - uses: renovatebot/github-action@v46.1.5
+      - uses: renovatebot/github-action@abd08c7549b2a864af5df4a2e369c43f035a6a9d # v46.1.5
         env:
           RENOVATE_REPOSITORIES: ${{ github.repository }}
           RENOVATE_ONBOARDING_CONFIG_FILE_NAME: .github/renovate.json
