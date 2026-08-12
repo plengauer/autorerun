@@ -34,9 +34,12 @@ runs:
           sed -e ':a' -e '/\\wsl.exe --update$/ { N; s/\n//; ba }' | grep -E "$(printf '%s' 'network is unreachable
         connection timeout
         timeout expired
-        TimeoutError
+        timeouterror
         connection reset by peer
         econnreset
+        schannel: sec_e_untrusted_root
+        ssl certificate problem
+        error: cannot verify .* certificate
         500 internal server error
         internal server error \(500\)
         500 internal error
