@@ -39,7 +39,8 @@ runs:
         econnreset
         schannel: sec_e_untrusted_root
         ssl certificate problem
-        error: cannot verify .* certificate
+        an action could not be found at the uri
+        cannot verify .* certificate
         500 internal server error
         internal server error \(500\)
         500 internal error
