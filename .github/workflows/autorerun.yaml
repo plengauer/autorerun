@@ -21,7 +21,7 @@ jobs:
       - run: echo "$GITHUB_EVENT_NAME"
       - run: echo "$GITHUB_EVENT_PATH"
       - run: cat "$GITHUB_EVENT_PATH"
-      - uses: plengauer/autorerun@fa83d125aa55aabcc35ffaf79a848eeca400b4dc # main
+      - uses: plengauer/autorerun@760e9ab2fa85d3397abf1e6ff701532241f581bc # main
         with:
           github_token: ${{ secrets.ACTIONS_GITHUB_TOKEN }} 
     permissions:
